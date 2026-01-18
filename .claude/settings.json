@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run /home/echeadle/17_eden/test/claude-code-crash-course/play_sound.py"
+          }
+        ]
+      }
+    ]
+  }
+}

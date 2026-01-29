@@ -1,74 +1,64 @@
-# Claude Code Crash Course 🚀
-![Claude Code Banner](/static/banner.png)
+# Optimizing MCP Context for Claude Code
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/EdenMarco177?style=social)](https://twitter.com/EdenMarco177)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Udemy Course](https://img.shields.io/badge/Claude%20Code%20Udemy%20Course-Coupon%20%2412.99-brightgreen)](https://www.udemy.com/course/claudecode/?referralCode=JAN-2026)
+This tutorial demonstrates how to minimize context token consumption in Claude Code by using project-specific MCP configurations instead of loading all available MCP servers.
 
-Welcome to the Claude Code Crash Course! This repository is designed to teach you the fundamentals and advanced concepts of Claude Code, Anthropic's official CLI for AI-powered software development, in a hands-on way.
+## The Problem
 
-## What is Claude Code? 💡
+When using a general [.mcp.json](https://docs.claude.com/en/docs/claude-code/mcp) file with multiple MCP servers, Claude Code loads all server tools and their descriptions into the context window. This consumes significant tokens even when you only need a fraction of the available functionality.
 
-Claude Code is an interactive command-line interface that brings Claude's AI capabilities directly to your development workflow. It helps with code analysis, bug fixing, feature development, refactoring, and workflow automation - all from your terminal.
+## The Solution
 
-## How it Works 🤔
+Use the `--mcp-config` flag to load minimal, project-specific MCP configurations tailored to your current task.
 
-This repository uses a unique branch-based structure for learning:
+## Tutorial Steps
 
-1.  **Each `project/*` branch covers a specific Claude Code feature or concept.**
-2.  **Within each branch, commits are ordered chronologically.** Follow the commits one by one to learn the topic step-by-step.
+### Step 1: [The Verbose MCP Server](https://github.com/emarco177/claude-code-crash-course/commit/edef7ffdcaeeeca4d109048053e7444e47cf4a78)
 
-Simply check out the branch for the topic you want to learn and walk through the commits!
+First, we created an intentionally verbose MCP server with excessive tool descriptions to demonstrate token waste:
 
-## Available Topics (Branches) 📚
+- Created [verbose_mcp_server.py](verbose_mcp_server.py) with overly detailed documentation
+- Each tool has hundreds of tokens of unnecessary description
+- Demonstrates how verbose tools consume context unnecessarily
 
-Here are the topics currently available:
+### Step 2: [Loading All MCP Servers](https://github.com/emarco177/claude-code-crash-course/commit/d6e830a881d448aa75502edf05c5b5b8be23fa1d)
 
-| Branch | Topic | Description |
-|--------|-------|-------------|
-| `project/custom-commands` | 🔧 Custom Commands | Learn to extend Claude Code with custom functionality like dad joke generators and automated commits |
-| `project/mcp` | 🔗 MCP Integration | Master Model Context Protocol integration with Context7 MCP server |
-| `project/context-engineering-mcp` | ⚡ Fine-Grained MCP Configuration | Optimize context tokens with task-specific MCP configurations using `--mcp-config` flag |
-| `project/subagents` | 🤖 Subagents | Build specialized AI agents within Claude Code like Code Comedy Carl |
-| `project/hooks-notifications` | 🎣 Hooks & Notifications | Automate your workflow with sound notifications and event triggers |
-| `project/hookhub` | 🏢 Hook Hub | Advanced hook management and organization systems |
+Added a general [.mcp.json](.mcp.json) configuration loading multiple MCP servers:
+- verbose-server (local)
+- context7
+- tavily
+- playwright
 
-*More topics might be added, so keep an eye out!*
+**Result**: Running Claude Code with `/context` reveals thousands of tokens consumed by unused tool descriptions.
 
-## Prerequisites 🛠️
+### Step 3: [Minimal MCP Configuration](https://github.com/emarco177/claude-code-crash-course/commit/c0b0538570b431a24166e5f33ffab901284097c5)
 
-Before you start, make sure you have the following installed:
+Created [.mcp.json.tavily](.mcp.json.tavily) with only the Tavily MCP server for research tasks.
 
-*   🤖 Claude Code CLI
-*   📦 Git
-*   🐍 Python (version 3.8 or higher)
-*   📝 Your favorite text editor/IDE
+**Usage**:
+```bash
+claude --mcp-config .mcp.json.tavily
+```
 
-## Getting Started ▶️
+**Result**: Significantly reduced context consumption while maintaining necessary functionality.
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/emarco177/claude-code-crash-course.git
-    cd claude-code-crash-course
-    ```
-2.  **Choose a topic and check out the branch:**
-    ```bash
-    # Example for the custom commands topic
-    git checkout project/custom-commands
-    ```
-3.  **Follow the commits:** Use `git log --oneline --reverse` to see the chronological list of commits for the branch. Then, use `git checkout <commit_hash>` or your Git client to step through the history and learn.
+## Commit Reference
 
-## Contributing 🤝
+| Step | Commit | Files Changed |
+|------|--------|---------------|
+| 1. Verbose MCP Server | [edef7ff](https://github.com/emarco177/claude-code-crash-course/commit/edef7ffdcaeeeca4d109048053e7444e47cf4a78) | `verbose_mcp_server.py`, `main.py`, `pyproject.toml` |
+| 2. General MCP Config | [d6e830a](https://github.com/emarco177/claude-code-crash-course/commit/d6e830a881d448aa75502edf05c5b5b8be23fa1d) | `.mcp.json` |
+| 3. Minimal MCP Config | [c0b0538](https://github.com/emarco177/claude-code-crash-course/commit/c0b0538570b431a24166e5f33ffab901284097c5) | `.mcp.json.tavily` |
 
-Contributions are welcome! If you'd like to add a new topic or improve an existing one:
+## Key Takeaways
 
-1.  Fork the repository.
-2.  Create a new branch for your feature following the naming convention: `project/your-claude-code-feature-name`.
-3.  Make your changes, ensuring each commit represents a logical step in the learning process.
-4.  Open a Pull Request against the `main` branch.
+1. **Default behavior is wasteful**: Loading all MCP servers consumes tokens for tools you won't use
+2. **Project-specific configs**: Create minimal `.mcp.json.*` files for different workflows
+3. **Use `--mcp-config` flag**: Bootstrap Claude Code with only the servers you need
+4. **Monitor with `/context`**: Check token usage to optimize your configuration
 
-## License 📄
+## Best Practices
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-
-Happy learning! 🎉
+- Create task-specific MCP configurations (e.g., `.mcp.json.research`, `.mcp.json.testing`)
+- Keep tool descriptions concise when building MCP servers
+- Use `--mcp-config` to select the minimal set of servers for each session
+- Regularly audit your MCP configurations for unnecessary tools
